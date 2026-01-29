@@ -1,0 +1,87 @@
+# ======================
+# Environment variables
+# ======================
+.env
+.env.*
+!.env.example
+
+# ======================
+# Node / React
+# ======================
+node_modules/
+frontend/node_modules/
+build/
+dist/
+.cache/
+npm-debug.log*
+yarn-debug.log*
+
+# ======================
+# Python
+# ======================
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# ======================
+# ML Models & Data
+# ======================
+*.h5
+*.pt
+*.pkl
+dataset/
+datasets/
+data/
+*.csv
+
+# ======================
+# IDE & OS
+# ======================
+.vscode/
+.idea/
+.DS_Store
+
+# ======================
+# Archives
+# ======================
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+
+# ======================
+# Firebase / Credentials
+# ======================
+*credentials.json*
+*token.json*
+*.pem
+
+# ======================
+# Next / Vercel
+# ======================
+.vercel
+.next/
+
+# Env files
+.env
+backend/.env
+frontend/.env
+
+# Firebase / secrets
+backend/serviceAccountKey.json
+
+# ML models (weights only)
+backend/models/*.h5
+backend/models/*.pt
+backend/models/*.pkl
+
+# Node
+node_modules/
+
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/
+

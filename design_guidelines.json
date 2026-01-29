@@ -1,0 +1,191 @@
+{
+  "identity": {
+    "name": "E1",
+    "role": "The Anti-AI Designer",
+    "principles": [
+      "Fusion over Imitation",
+      "Emotion First",
+      "Content is King",
+      "Zoom In",
+      "Negative Space",
+      "Contrast"
+    ]
+  },
+  "design_system": {
+    "theme_strategy": "Organic & Earthy (Archetype 1)",
+    "colors": {
+      "light": {
+        "background": "#F7F6F2",
+        "foreground": "#1C1917",
+        "card": "#FFFFFF",
+        "card_foreground": "#1C1917",
+        "primary": "#1A4D2E",
+        "primary_foreground": "#FFFFFF",
+        "secondary": "#E8F5E9",
+        "secondary_foreground": "#1A4D2E",
+        "accent": "#D97706",
+        "accent_foreground": "#FFFFFF",
+        "muted": "#F0FDF4",
+        "muted_foreground": "#4B5563",
+        "border": "#E5E7EB",
+        "input": "#E5E7EB",
+        "ring": "#1A4D2E"
+      },
+      "dark": {
+        "background": "#0C0A09",
+        "foreground": "#F2F0E6",
+        "card": "#1C1917",
+        "card_foreground": "#F2F0E6",
+        "primary": "#4ADE80",
+        "primary_foreground": "#052E16",
+        "secondary": "#292524",
+        "secondary_foreground": "#F2F0E6",
+        "accent": "#F59E0B",
+        "accent_foreground": "#000000",
+        "muted": "#292524",
+        "muted_foreground": "#A8A29E",
+        "border": "#292524",
+        "input": "#292524",
+        "ring": "#4ADE80"
+      },
+      "palette_notes": "Natural palette: Deep Forest Green for trust, Sky Blue for weather/water, Soil Brown/Terracotta for accents. Avoid neon greens. Use matte finishes."
+    },
+    "typography": {
+      "font_family": {
+        "headings": "Manrope, sans-serif",
+        "body": "Inter, sans-serif",
+        "mono": "JetBrains Mono, monospace"
+      },
+      "scale": {
+        "h1": "text-4xl md:text-5xl font-bold tracking-tight",
+        "h2": "text-3xl md:text-4xl font-semibold tracking-tight",
+        "h3": "text-2xl md:text-3xl font-semibold",
+        "body_large": "text-lg leading-relaxed",
+        "body_default": "text-base leading-relaxed",
+        "caption": "text-sm text-muted-foreground"
+      },
+      "rules": "Headings must use Manrope. Body uses Inter. No generic 'sans-serif' fallback without a primary font."
+    },
+    "spacing": {
+      "container_padding": "p-4 md:p-8 lg:p-12",
+      "section_gap": "gap-8 md:gap-12",
+      "element_gap": "gap-4",
+      "touch_target": "min-h-[48px] min-w-[48px]"
+    },
+    "radius": {
+      "default": "rounded-xl",
+      "card": "rounded-2xl",
+      "button": "rounded-full"
+    },
+    "shadows": {
+      "card": "shadow-sm hover:shadow-md transition-shadow duration-200",
+      "dropdown": "shadow-lg border border-border/50",
+      "button": "shadow-sm hover:shadow-md"
+    }
+  },
+  "components": {
+    "buttons": {
+      "primary": "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm rounded-full px-6 py-3 font-medium transition-all active:scale-95",
+      "secondary": "bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded-full px-6 py-3 font-medium transition-all active:scale-95",
+      "outline": "border-2 border-primary text-primary hover:bg-primary/10 rounded-full px-6 py-3 font-medium transition-all active:scale-95",
+      "ghost": "hover:bg-accent/10 hover:text-accent rounded-full px-4 py-2 transition-colors"
+    },
+    "cards": {
+      "dashboard": "bg-card text-card-foreground rounded-2xl border border-border/50 shadow-sm p-6 hover:border-primary/20 transition-colors",
+      "feature": "bg-card/50 backdrop-blur-sm border border-border/50 rounded-3xl p-8 hover:bg-card/80 transition-all duration-300 group"
+    },
+    "inputs": {
+      "default": "h-12 rounded-lg border-input bg-background px-4 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+    },
+    "navigation": {
+      "navbar": "sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60",
+      "sidebar": "hidden md:flex h-screen w-64 flex-col fixed left-0 top-0 border-r bg-card z-40"
+    }
+  },
+  "layouts": {
+    "dashboard_grid": "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 p-6",
+    "bento_grid": "grid grid-cols-1 md:grid-cols-3 gap-4 auto-rows-[minmax(180px,auto)]",
+    "landing_hero": "relative flex flex-col items-center justify-center min-h-[80vh] text-center px-4 py-20 overflow-hidden",
+    "feature_section": "py-24 px-6 max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-16 items-center"
+  },
+  "assets": {
+    "images": {
+      "hero": [
+        {
+          "url": "https://images.unsplash.com/photo-1589292144899-2f43a71a1b2b?crop=entropy&cs=srgb&fm=jpg&q=85",
+          "alt": "Indian farmer using tablet in green field",
+          "category": "hero"
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1696371269777-88d1ce71642c?crop=entropy&cs=srgb&fm=jpg&q=85",
+          "alt": "Farmer standing in field",
+          "category": "hero"
+        }
+      ],
+      "crops": [
+        {
+          "url": "https://images.unsplash.com/photo-1645439162146-b2b94da3d55b?crop=entropy&cs=srgb&fm=jpg&q=85",
+          "alt": "Close up healthy green wheat crop",
+          "category": "crops"
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1698553114060-a1850dad6c27?crop=entropy&cs=srgb&fm=jpg&q=85",
+          "alt": "Golden wheat grass",
+          "category": "crops"
+        }
+      ],
+      "technology": [
+        {
+          "url": "https://images.unsplash.com/photo-1677126577258-1a82fdf1a976?crop=entropy&cs=srgb&fm=jpg&q=85",
+          "alt": "Agricultural drone spraying field",
+          "category": "tech"
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1760938580105-3bad290397dd?crop=entropy&cs=srgb&fm=jpg&q=85",
+          "alt": "Modern harvester at sunset",
+          "category": "tech"
+        }
+      ],
+      "disease_detection": [
+        {
+          "url": "https://images.unsplash.com/photo-1694100223107-c898e5c117c9?crop=entropy&cs=srgb&fm=jpg&q=85",
+          "alt": "Tomato leaf early blight",
+          "category": "disease_example"
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1600420636132-5ccf1ffd711e?crop=entropy&cs=srgb&fm=jpg&q=85",
+          "alt": "Corn leaf rust",
+          "category": "disease_example"
+        }
+      ],
+      "tools_and_resources": [
+        {
+          "url": "https://images.unsplash.com/photo-1756158450046-24e51d854f71?crop=entropy&cs=srgb&fm=jpg&q=85",
+          "alt": "Bags of fertilizer and seeds",
+          "category": "resources"
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1705113998946-1eefc7961c24?crop=entropy&cs=srgb&fm=jpg&q=85",
+          "alt": "Farming tools shovel rake",
+          "category": "resources"
+        }
+      ]
+    },
+    "icons": {
+      "library": "lucide-react",
+      "style": "Stroke width 1.5px, rounded caps/joins"
+    }
+  },
+  "universal_guidelines": [
+    "DO NOT use generic 'SaaS Blue' (#3B82F6) as primary. Use the defined Forest Green.",
+    "DO NOT use gradients for text. Keep it legible.",
+    "Ensure all touch targets are at least 48x48px for accessibility in the field.",
+    "Use 'Manrope' for all headings. If not available, use a strong sans-serif.",
+    "Dark mode should be 'Deep Loam' (#0C0A09), not pure black.",
+    "All interactive elements must have a :focus-visible state for keyboard navigation.",
+    "Images must have alt text for accessibility.",
+    "Use 'sonner' for toast notifications.",
+    "All key elements must have 'data-testid' attributes."
+  ],
+  "instructions_to_main_agent": "You are building a Smart Farmer Portal. Prioritize clarity, large touch targets, and high contrast. The UI should feel 'organic' but 'modern'. Use the provided image URLs for the respective sections. Implement the 'Bento' grid for the dashboard. Ensure the 'Disease Detection' page has a clear upload area and displays the example images as 'Recent Scans' or 'Common Diseases'. Use the 'Organic & Earthy' color palette strictly."
+}

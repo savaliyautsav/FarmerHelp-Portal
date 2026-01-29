@@ -1,0 +1,125 @@
+# ==================================================
+# ENVIRONMENT VARIABLES (NEVER COMMIT SECRETS)
+# ==================================================
+.env
+.env.*
+!.env.example
+backend/.env
+frontend/.env
+
+# Firebase / service accounts
+backend/serviceAccountKey.json
+*credentials.json*
+*token.json*
+*.pem
+
+# ==================================================
+# NODE / REACT
+# ==================================================
+node_modules/
+frontend/node_modules/
+build/
+dist/
+.cache/
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# ==================================================
+# PYTHON
+# ==================================================
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# ==================================================
+# MACHINE LEARNING MODELS (WEIGHTS ONLY)
+# ==================================================
+*.h5
+*.pt
+*.pkl
+backend/models/*.h5
+
+# ==================================================
+# ML DATASETS (HUGE IMAGE FILES)
+# ==================================================
+
+# Ignore dataset directories
+backend/dataset/
+backend/datasets/
+backend/data/
+backend/models/dataset/bacterial_blight/
+backend/models/dataset/curl_virus/
+backend/models/dataset/fussarium_wilt/
+backend/models/dataset/healthy/
+
+
+backend/models/dataset_crop/Corn
+backend/models/dataset_crop/Cotton/
+backend/models/dataset_crop/Wheat/
+
+backend/models/dataset_disease_corn/Blight/
+backend/models/dataset_disease_corn/Common_rust/
+backend/models/dataset_disease_corn/Gray_Leaf_Spot/
+backend/models/dataset_disease_corn/Healthy/
+
+backend/models/dataset_disease_cotton/Bacterial_Blight/
+backend/models/dataset_disease_cotton/Healthy/
+backend/models/dataset_disease_cotton/Curl_Virus/
+backend/models/dataset_disease_cotton/Fusarium_Wilt/
+
+backend/models/dataset_disease_wheat/Healthy/
+backend/models/dataset_disease_wheat/Brown_Rust/
+backend/models/dataset_disease_wheat/Yellow_Rust/
+
+# Ignore crop/disease subfolders (extra safety)
+backend/models/**/Corn/
+backend/models/**/Cotton/
+backend/models/**/Wheat/
+backend/models/**/Blight/
+
+# Base dataset folders
+backend/models/dataset/
+backend/models/dataset_crop/
+backend/models/dataset_disease_corn/
+backend/models/dataset_disease_cotton/
+backend/models/dataset_disease_wheat/
+
+# Safety: ignore all image formats everywhere
+**/*.jpg
+**/*.jpeg
+**/*.png
+**/*.bmp
+**/*.tiff
+
+# Ignore ALL image formats everywhere
+**/*.jpg
+**/*.jpeg
+**/*.png
+**/*.bmp
+**/*.tiff
+
+# Ignore large data files
+*.csv
+
+# ==================================================
+# IDE / OS
+# ==================================================
+.vscode/
+.idea/
+.DS_Store
+
+# ==================================================
+# ARCHIVES / LARGE FILES
+# ==================================================
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+
+# ==================================================
+# NEXT / VERCEL
+# ==================================================
+.vercel
+.next/
