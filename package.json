@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "@babel/core": "^7.28.6",
+    "date-fns": "^4.1.0",
+    "react-is": "^19.2.4"
+  }
+}
