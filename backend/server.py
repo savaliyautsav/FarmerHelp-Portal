@@ -61,6 +61,8 @@ db = client[db_name]
 # ========== ML MODELS LOAD ==========
 print("⏳ Loading ML models...")
 
+crop_model = None
+
 def load_crop_model():
     global crop_model
     if crop_model is None:
@@ -123,14 +125,15 @@ app = FastAPI(lifespan=lifespan)
 # ✅ CORS MUST COME HERE
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=os.environ.get(
-        "CORS_ORIGINS",
-        "https://farmsmart-1842b9ra1-savaliyautsav836-gmailcoms-projects.vercel.app,http://localhost:3000"
-    ).split(","),
+    allow_origins=[
+        "https://farmsmart-1842b9ra1-savaliyautsav836-gmailcoms-projects.vercel.app",
+        "http://localhost:3000"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 
 # Create a router with the /api prefix
@@ -342,11 +345,11 @@ async def delete_user(firebase_uid: str):
 
 # ========== DISEASE DETECTION ==========
 
-if image.size > 5 * 1024 * 1024:
-    raise HTTPException(
-        status_code=400,
-        detail="Image too large. Max size is 5MB."
-    )
+    contents = await image.read()
+    if len(contents) > 5 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="Image too large (max 5MB)")
+    image.file.seek(0)
+
 
 @api_router.post("/detect-disease")
 async def detect_disease(
@@ -361,7 +364,7 @@ async def detect_disease(
         img_array = np.expand_dims(img_array, axis=0)
 
         # ---------- STEP 1: CROP PREDICTION (ML) ----------
-        crop_pred = crop_model.predict(img_array)
+        crop_pred = load_crop_model().predict(img_array)
         crop_index = int(np.argmax(crop_pred))
         crop_name = crop_classes[crop_index]
         crop_confidence = float(np.max(crop_pred)) * 100
@@ -419,37 +422,34 @@ async def detect_disease(
             "severity": "Unknown"
         })
 
-        try:
+        if azure_client:
             response = azure_client.chat.completions.create(
                 model=os.environ.get("AZURE_OPENAI_API_NAME", "gpt-4o"),
                 messages=[
-                     {"role": "system", "content": system_prompt},
-                     {"role": "user", "content": user_prompt}
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt}
                 ],
-                 max_tokens=500,
-                timeout=15
+                max_tokens=500
             )
 
             ai_text = response.choices[0].message.content
 
             if "```json" in ai_text:
-                 ai_text = ai_text.split("```json")[1].split("```")[0]
+                ai_text = ai_text.split("```json")[1].split("```")[0]
             elif "```" in ai_text:
                 ai_text = ai_text.split("```")[1].split("```")[0]
 
             info = json.loads(ai_text)
-
-        except Exception as e:
-            logging.warning(f"⚠ Azure OpenAI failed: {e}")
-        except:
+        else:
             info = {
-                "cause": "Unknown",
+                "cause": "AI service not configured",
                 "symptoms": [],
                 "treatment": "N/A",
                 "recommended_fertilizer": "N/A",
                 "recommended_medicine": "N/A",
                 "severity": "Unknown"
             }
+
 
         # ---------- SAVE REPORT ----------
         report = DiseaseReport(
