@@ -139,7 +139,7 @@ gunicorn
 fastapi
 uvicorn
 gunicorn
-numpy
+numpy<2.0
 pandas
 scikit-learn
 opencv-python
@@ -147,5 +147,10 @@ Pillow
 torch
 torchvision
 python-multipart
-tensorflow
+tensorflow==2.12.0
 flask
+opencv-python-headless
+motor
+python-dotenv
+firebase-admin
+httpx

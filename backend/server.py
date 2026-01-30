@@ -34,14 +34,15 @@ load_dotenv(ROOT_DIR / '.env')
 # ========== FIREBASE INIT ==========
 FIREBASE_CRED_PATH = os.environ.get("FIREBASE_CREDENTIALS")
 
-if not FIREBASE_CRED_PATH:
-    raise RuntimeError("FIREBASE_CREDENTIALS not set")
+firebase_db = None
+if FIREBASE_CRED_PATH and os.path.exists(FIREBASE_CRED_PATH):
+    if not firebase_admin._apps:
+        cred = credentials.Certificate(FIREBASE_CRED_PATH)
+        firebase_admin.initialize_app(cred)
+    firebase_db = firestore.client()
+else:
+    print("⚠ Firebase disabled: credentials not found")
 
-if not firebase_admin._apps:
-    cred = credentials.Certificate(FIREBASE_CRED_PATH)
-    firebase_admin.initialize_app(cred)
-
-firebase_db = firestore.client()
 
 
 # MongoDB connection
@@ -55,22 +56,38 @@ db = client[os.environ['DB_NAME']]
 
 # ========== ML MODELS LOAD ==========
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+crop_model = None
+corn_model = None
+cotton_model = None
 
-crop_model = tf.keras.models.load_model(
-    os.path.join(BASE_DIR, "models", "crop_classifier.h5"),
-    compile=False
-)
+def load_crop_model():
+    global crop_model
+    if crop_model is None:
+        crop_model = tf.keras.models.load_model(
+            os.path.join(BASE_DIR, "models", "crop_classifier.h5"),
+            compile=False
+        )
+    return crop_model
 
-corn_model = tf.keras.models.load_model(
-    os.path.join(BASE_DIR, "models", "corn_disease_model.h5"),
-    compile=False
-)
+def load_corn_model():
+    global corn_model
+    if corn_model is None:
+        corn_model = tf.keras.models.load_model(
+            os.path.join(BASE_DIR, "models", "corn_disease_model.h5"),
+            compile=False
+        )
+    return corn_model
 
-cotton_model = tf.keras.models.load_model(
-    os.path.join(BASE_DIR, "models", "cotton_disease_model.h5"),
-    compile=False
-)
+def load_cotton_model():
+    global cotton_model
+    if cotton_model is None:
+        cotton_model = tf.keras.models.load_model(
+            os.path.join(BASE_DIR, "models", "cotton_disease_model.h5"),
+            compile=False
+        )
+    return cotton_model
+
+
 
 
 crop_classes = ['Corn', 'Cotton', 'Wheat']
@@ -321,7 +338,8 @@ async def detect_disease(
         img_array = np.expand_dims(img_array, axis=0)
 
         # ---------- STEP 1: CROP PREDICTION (ML) ----------
-        crop_pred = crop_model.predict(img_array)
+        crop_pred = load_crop_model().predict(img_array)
+
         crop_index = int(np.argmax(crop_pred))
         crop_name = crop_classes[crop_index]
         crop_confidence = float(np.max(crop_pred)) * 100
