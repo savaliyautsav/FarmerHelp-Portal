@@ -68,9 +68,9 @@ cotton_model = None
 def load_crop_model():
     global crop_model
     if crop_model is None:
-        model_path = os.path.join(BASE_DIR, "models", "crop_classifier.h5")
+        model_path = os.path.join(BASE_DIR, "models", "crop_classifier.keras")
         if not os.path.exists(model_path):
-            raise RuntimeError("crop_classifier.h5 NOT FOUND")
+            raise RuntimeError("crop_classifier.keras NOT FOUND")
         crop_model = tf.keras.models.load_model(model_path, compile=False)
     return crop_model
 
