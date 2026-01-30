@@ -26,6 +26,8 @@ import tensorflow as tf
 import numpy as np
 from PIL import Image
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 
 
 ROOT_DIR = Path(__file__).parent
@@ -46,13 +48,15 @@ else:
 
 
 # MongoDB connection
-mongo_url = os.environ['MONGO_URL']
-client = AsyncIOMotorClient(
-    mongo_url,
-    tls=True,
-    tlsAllowInvalidCertificates=False
-)
-db = client[os.environ['DB_NAME']]
+mongo_url = os.environ.get("MONGO_URL")
+db_name = os.environ.get("DB_NAME")
+
+if not mongo_url or not db_name:
+    raise RuntimeError("MongoDB environment variables not set")
+
+client = AsyncIOMotorClient(mongo_url)
+db = client[db_name]
+
 
 # ========== ML MODELS LOAD ==========
 
@@ -346,10 +350,10 @@ async def detect_disease(
 
         # ---------- STEP 2: DISEASE PREDICTION (ML) ----------
         if crop_name == "Corn":
-            dis_pred = corn_model.predict(img_array)
-            disease_name = corn_diseases[np.argmax(dis_pred)]
+           dis_pred = load_corn_model().predict(img_array)
+           disease_name = corn_diseases[np.argmax(dis_pred)]
         elif crop_name == "Cotton":
-            dis_pred = cotton_model.predict(img_array)
+            dis_pred = load_cotton_model().predict(img_array)
             disease_name = cotton_diseases[np.argmax(dis_pred)]
         else:
             disease_name = "Healthy"

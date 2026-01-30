@@ -29,4 +29,6 @@ COPY . .
 EXPOSE 10000
 
 # 9️⃣ Start FastAPI using Gunicorn
-CMD ["gunicorn", "-k", "uvicorn.workers.UvicornWorker", "server:app", "--bind", "0.0.0.0:10000"]
+CMD ["sh", "-c", "gunicorn -k uvicorn.workers.UvicornWorker server:app --bind 0.0.0.0:${PORT}"]
+
+
