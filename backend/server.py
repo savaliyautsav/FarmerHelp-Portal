@@ -1,4 +1,6 @@
 import os
+
+from matplotlib import image
 os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 
@@ -59,39 +61,24 @@ db = client[db_name]
 
 
 # ========== ML MODELS LOAD ==========
+print("⏳ Loading ML models...")
 
-crop_model = None
-corn_model = None
-cotton_model = None
+crop_model = tf.keras.models.load_model(
+    os.path.join(BASE_DIR, "models", "crop_classifier.h5"),
+    compile=False
+)
 
-def load_crop_model():
-    global crop_model
-    if crop_model is None:
-        crop_model = tf.keras.models.load_model(
-            os.path.join(BASE_DIR, "models", "crop_classifier.h5"),
-            compile=False
-        )
-    return crop_model
+corn_model = tf.keras.models.load_model(
+    os.path.join(BASE_DIR, "models", "corn_disease_model.h5"),
+    compile=False
+)
 
-def load_corn_model():
-    global corn_model
-    if corn_model is None:
-        corn_model = tf.keras.models.load_model(
-            os.path.join(BASE_DIR, "models", "corn_disease_model.h5"),
-            compile=False
-        )
-    return corn_model
+cotton_model = tf.keras.models.load_model(
+    os.path.join(BASE_DIR, "models", "cotton_disease_model.h5"),
+    compile=False
+)
 
-def load_cotton_model():
-    global cotton_model
-    if cotton_model is None:
-        cotton_model = tf.keras.models.load_model(
-            os.path.join(BASE_DIR, "models", "cotton_disease_model.h5"),
-            compile=False
-        )
-    return cotton_model
-
-
+print("✅ ML models loaded")
 
 
 crop_classes = ['Corn', 'Cotton', 'Wheat']
@@ -133,12 +120,6 @@ app.add_middleware(
 )
 
 api_router = APIRouter(prefix="/api")
-
-# THEN include routes
-
-
-
-
 
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
@@ -349,6 +330,12 @@ async def delete_user(firebase_uid: str):
 
 # ========== DISEASE DETECTION ==========
 
+if image.size > 5 * 1024 * 1024:
+    raise HTTPException(
+        status_code=400,
+        detail="Image too large. Max size is 5MB."
+    )
+
 @api_router.post("/detect-disease")
 async def detect_disease(
     user_id: str = Form(...),
@@ -362,18 +349,17 @@ async def detect_disease(
         img_array = np.expand_dims(img_array, axis=0)
 
         # ---------- STEP 1: CROP PREDICTION (ML) ----------
-        crop_pred = load_crop_model().predict(img_array)
-
+        crop_pred = crop_model.predict(img_array)
         crop_index = int(np.argmax(crop_pred))
         crop_name = crop_classes[crop_index]
         crop_confidence = float(np.max(crop_pred)) * 100
 
         # ---------- STEP 2: DISEASE PREDICTION (ML) ----------
         if crop_name == "Corn":
-           dis_pred = load_corn_model().predict(img_array)
+           dis_pred = corn_model.predict(img_array)
            disease_name = corn_diseases[np.argmax(dis_pred)]
         elif crop_name == "Cotton":
-            dis_pred = load_cotton_model().predict(img_array)
+            dis_pred = cotton_model.predict(img_array)
             disease_name = cotton_diseases[np.argmax(dis_pred)]
         else:
             disease_name = "Healthy"
@@ -401,25 +387,37 @@ async def detect_disease(
         Disease: {disease_name}
         """
 
-        response = azure_client.chat.completions.create(
-            model=os.environ.get("AZURE_OPENAI_API_NAME", "gpt-4o"),
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt}
-            ],
-            max_tokens=500
-        )
+        info = {
+             "cause": "AI analysis unavailable",
+             "symptoms": [],
+             "treatment": "Consult local agriculture expert",
+             "recommended_fertilizer": "N/A",
+             "recommended_medicine": "N/A",
+            "severity": "Unknown"
+        }
 
-        ai_text = response.choices[0].message.content
-
-        # ---------- SAFE JSON PARSING ----------
         try:
+            response = azure_client.chat.completions.create(
+                model=os.environ.get("AZURE_OPENAI_API_NAME", "gpt-4o"),
+                messages=[
+                     {"role": "system", "content": system_prompt},
+                     {"role": "user", "content": user_prompt}
+                ],
+                 max_tokens=500,
+                timeout=15
+            )
+
+            ai_text = response.choices[0].message.content
+
             if "```json" in ai_text:
-                ai_text = ai_text.split("```json")[1].split("```")[0]
+                 ai_text = ai_text.split("```json")[1].split("```")[0]
             elif "```" in ai_text:
                 ai_text = ai_text.split("```")[1].split("```")[0]
 
             info = json.loads(ai_text)
+
+        except Exception as e:
+            logging.warning(f"⚠ Azure OpenAI failed: {e}")
         except:
             info = {
                 "cause": "Unknown",
@@ -460,7 +458,16 @@ async def detect_disease(
         }
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logging.exception("❌ Disease detection failed")
+        return JSONResponse(
+            status_code=500,
+            content={
+                "success": False,
+                "error": "Disease detection failed",
+                "details": str(e)
+            }
+     )
+
 
 
 
