@@ -117,7 +117,24 @@ async def lifespan(app: FastAPI):
     client.close()
     logger.info("MongoDB connection closed")
 
+
 app = FastAPI(lifespan=lifespan)
+
+# ✅ CORS MUST COME HERE
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=os.environ.get(
+        "CORS_ORIGINS",
+        "https://farmsmart-1842b9ra1-savaliyautsav836-gmailcoms-projects.vercel.app,http://localhost:3000"
+    ).split(","),
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# THEN include routes
+app.include_router(api_router)
+
 
 
 # Create a router with the /api prefix
