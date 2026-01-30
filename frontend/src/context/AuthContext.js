@@ -70,7 +70,7 @@ export const AuthProvider = ({ children }) => {
 const register = async (email, password, displayName, farmLocation) => {
   // Firebase auth create user here...
 
-  const response = await fetch("http://127.0.0.1:8000/api/users", {
+  const response = await fetch(`${API}/users`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
