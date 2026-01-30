@@ -13,3 +13,4 @@ motor
 python-dotenv
 firebase-admin
 httpx
+openai
