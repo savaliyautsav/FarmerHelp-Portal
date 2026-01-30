@@ -27,7 +27,7 @@ venv/
 # ======================
 # ML Models & Data
 # ======================
-*.h5
+
 *.pt
 *.pkl
 dataset/
@@ -72,9 +72,7 @@ frontend/.env
 backend/serviceAccountKey.json
 
 # ML models (weights only)
-backend/models/*.h5
-backend/models/*.pt
-backend/models/*.pkl
+
 
 # Node
 node_modules/

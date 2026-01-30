@@ -2,6 +2,7 @@ import os
 os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 
+import uvicorn
 from fastapi import FastAPI, APIRouter, HTTPException, UploadFile, File, Form
 from fastapi.responses import JSONResponse
 from dotenv import load_dotenv
@@ -54,9 +55,22 @@ db = client[os.environ['DB_NAME']]
 
 # ========== ML MODELS LOAD ==========
 
-crop_model = tf.keras.models.load_model("models/crop_classifier.h5", compile=False)
-corn_model = tf.keras.models.load_model("models/corn_disease_model.h5", compile=False)
-cotton_model = tf.keras.models.load_model("models/cotton_disease_model.h5", compile=False)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+crop_model = tf.keras.models.load_model(
+    os.path.join(BASE_DIR, "models", "crop_classifier.h5"),
+    compile=False
+)
+
+corn_model = tf.keras.models.load_model(
+    os.path.join(BASE_DIR, "models", "corn_disease_model.h5"),
+    compile=False
+)
+
+cotton_model = tf.keras.models.load_model(
+    os.path.join(BASE_DIR, "models", "cotton_disease_model.h5"),
+    compile=False
+)
 
 
 crop_classes = ['Corn', 'Cotton', 'Wheat']
@@ -714,5 +728,15 @@ logger = logging.getLogger(__name__)
 # @app.on_event("shutdown")
 # async def shutdown_db_client():
 #     client.close()
+
+
+
+
+# if __name__ == "__main__":
+#     uvicorn.run(
+#         "server:app",
+#         host="0.0.0.0",
+#         port=int(os.environ.get("PORT", 8000))
+#     )
 
 # uvicorn server:app --reload
