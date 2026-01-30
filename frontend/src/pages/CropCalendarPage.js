@@ -152,9 +152,11 @@ const CropCalendarPage = () => {
     notes: ''
   });
 
-  useEffect(() => {
-    fetchEntries();
-  }, [user]);
+// eslint-disable-next-line react-hooks/exhaustive-deps
+useEffect(() => {
+  fetchEntries();
+}, []);
+
 
   const fetchEntries = async () => {
     if (!user?.uid) {
