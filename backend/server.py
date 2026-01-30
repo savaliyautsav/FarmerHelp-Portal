@@ -63,10 +63,16 @@ db = client[db_name]
 # ========== ML MODELS LOAD ==========
 print("⏳ Loading ML models...")
 
-crop_model = tf.keras.models.load_model(
-    os.path.join(BASE_DIR, "models", "crop_classifier.h5"),
-    compile=False
-)
+def load_crop_model():
+    global crop_model
+    if crop_model is None:
+        model_path = os.path.join(BASE_DIR, "models", "crop_classifier.h5")
+        if not os.path.exists(model_path):
+            raise RuntimeError("crop_classifier.h5 NOT FOUND")
+        crop_model = tf.keras.models.load_model(model_path, compile=False)
+    return crop_model
+
+
 
 corn_model = tf.keras.models.load_model(
     os.path.join(BASE_DIR, "models", "corn_disease_model.h5"),
@@ -87,11 +93,20 @@ cotton_diseases = ['Bacterial_Blight', 'Curl_Virus', 'Fusarium_Wilt', 'Healthy']
 
 
 # Azure OpenAI client
-azure_client = AzureOpenAI(
-    api_key=os.environ.get('AZURE_API_KEY'),
-    api_version=os.environ.get('AZURE_OPENAI_API_VERSION'),
-    azure_endpoint=os.environ.get('AZURE_OPENAI_API_BASE')
-)
+azure_client = None
+
+if (
+    os.environ.get("AZURE_API_KEY")
+    and os.environ.get("AZURE_OPENAI_API_VERSION")
+    and os.environ.get("AZURE_OPENAI_API_BASE")
+):
+    azure_client = AzureOpenAI(
+        api_key=os.environ.get("AZURE_API_KEY"),
+        api_version=os.environ.get("AZURE_OPENAI_API_VERSION"),
+        azure_endpoint=os.environ.get("AZURE_OPENAI_API_BASE"),
+    )
+
+    
 
 # # Create the main app
 # app = FastAPI()
@@ -119,7 +134,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-api_router = APIRouter(prefix="/api")
 
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
@@ -387,14 +401,25 @@ async def detect_disease(
         Disease: {disease_name}
         """
 
-        info = {
-             "cause": "AI analysis unavailable",
+        if azure_client:
+            response = azure_client.chat.completions.create(
+                model=os.environ.get("AZURE_OPENAI_API_NAME", "gpt-4o"),
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt}
+                ],
+                max_tokens=500
+            )
+            ai_text = response.choices[0].message.content
+        else:
+            ai_text = json.dumps({
+             "cause": "AI service not configured",
              "symptoms": [],
-             "treatment": "Consult local agriculture expert",
-             "recommended_fertilizer": "N/A",
-             "recommended_medicine": "N/A",
+             "treatment": "N/A",
+            "recommended_fertilizer": "N/A",
+            "recommended_medicine": "N/A",
             "severity": "Unknown"
-        }
+        })
 
         try:
             response = azure_client.chat.completions.create(
@@ -769,9 +794,7 @@ async def get_government_policies():
     }
 
 # Include the router in the main app
-
 app.include_router(api_router)
-
 
 # Configure logging
 logging.basicConfig(
