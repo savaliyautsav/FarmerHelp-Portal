@@ -62,6 +62,8 @@ db = client[db_name]
 print("⏳ Loading ML models...")
 
 crop_model = None
+corn_model = None
+cotton_model = None
 
 def load_crop_model():
     global crop_model
@@ -74,16 +76,23 @@ def load_crop_model():
 
 
 
-corn_model = tf.keras.models.load_model(
-    os.path.join(BASE_DIR, "models", "corn_disease_model.h5"),
-    compile=False
-)
+def load_corn_model():
+    global corn_model
+    if corn_model is None:
+        corn_model = tf.keras.models.load_model(
+            os.path.join(BASE_DIR, "models", "corn_disease_model.h5"),
+            compile=False
+        )
+    return corn_model
 
-cotton_model = tf.keras.models.load_model(
-    os.path.join(BASE_DIR, "models", "cotton_disease_model.h5"),
-    compile=False
-)
-
+def load_cotton_model():
+    global cotton_model
+    if cotton_model is None:
+        cotton_model = tf.keras.models.load_model(
+            os.path.join(BASE_DIR, "models", "cotton_disease_model.h5"),
+            compile=False
+        )
+    return cotton_model
 print("✅ ML models loaded")
 
 
@@ -345,17 +354,16 @@ async def delete_user(firebase_uid: str):
 
 # ========== DISEASE DETECTION ==========
 
-    contents = await image.read()
-    if len(contents) > 5 * 1024 * 1024:
-        raise HTTPException(status_code=400, detail="Image too large (max 5MB)")
-    image.file.seek(0)
-
-
 @api_router.post("/detect-disease")
 async def detect_disease(
     user_id: str = Form(...),
     image: UploadFile = File(...)
 ):
+    contents = await image.read()
+    if len(contents) > 5 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="Image too large (max 5MB)")
+    image.file.seek(0)
+    
     try:
         # ---------- IMAGE PREPROCESS ----------
         img = Image.open(image.file).convert("RGB")
@@ -371,10 +379,10 @@ async def detect_disease(
 
         # ---------- STEP 2: DISEASE PREDICTION (ML) ----------
         if crop_name == "Corn":
-           dis_pred = corn_model.predict(img_array)
+           dis_pred = load_corn_model().predict(img_array)
            disease_name = corn_diseases[np.argmax(dis_pred)]
         elif crop_name == "Cotton":
-            dis_pred = cotton_model.predict(img_array)
+            dis_pred = load_cotton_model().predict(img_array)
             disease_name = cotton_diseases[np.argmax(dis_pred)]
         else:
             disease_name = "Healthy"
@@ -423,23 +431,36 @@ async def detect_disease(
         })
 
         if azure_client:
-            response = azure_client.chat.completions.create(
-                model=os.environ.get("AZURE_OPENAI_API_NAME", "gpt-4o"),
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_prompt}
-                ],
-                max_tokens=500
-            )
+            try:
+                    response = azure_client.chat.completions.create(
+                        model=os.environ.get("AZURE_OPENAI_API_NAME", "gpt-4o"),
+                        messages=[
+                            {"role": "system", "content": system_prompt},
+                            {"role": "user", "content": user_prompt}
+                        ],
+                        max_tokens=500,
+                        timeout=15
+                    )
 
-            ai_text = response.choices[0].message.content
+                    ai_text = response.choices[0].message.content
 
-            if "```json" in ai_text:
-                ai_text = ai_text.split("```json")[1].split("```")[0]
-            elif "```" in ai_text:
-                ai_text = ai_text.split("```")[1].split("```")[0]
+                    if "```json" in ai_text:
+                        ai_text = ai_text.split("```json")[1].split("```")[0]
+                    elif "```" in ai_text:
+                        ai_text = ai_text.split("```")[1].split("```")[0]
 
-            info = json.loads(ai_text)
+                    info = json.loads(ai_text)
+                    
+            except Exception as e:
+                    logging.warning(f"Azure OpenAI failed: {e}")
+                    info = {
+                            "cause": "Unknown",
+                            "symptoms": [],
+                            "treatment": "N/A",
+                            "recommended_fertilizer": "N/A",
+                            "recommended_medicine": "N/A",
+                            "severity": "Unknown"
+                    }
         else:
             info = {
                 "cause": "AI service not configured",
