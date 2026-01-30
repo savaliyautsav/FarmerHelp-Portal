@@ -132,8 +132,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+api_router = APIRouter(prefix="/api")
+
 # THEN include routes
-app.include_router(api_router)
+
+
 
 
 
@@ -599,19 +602,31 @@ async def get_farming_news():
 
 @api_router.get("/market-prices")
 async def get_market_prices():
+    api_key = os.environ.get("MARKET_API_KEY")
+    resource_id = os.environ.get("MARKET_RESOURCE_ID")
+
+    # ✅ If API not configured → dummy immediately
+    if not api_key or not resource_id:
+        return {
+            "prices": [
+                {"commodity": "Wheat", "market": "Azadpur", "state": "Delhi", "modal_price": "2200"}
+            ],
+            "source": "dummy"
+        }
+
     try:
-        api_key = os.environ.get('MARKET_API_KEY')
-        resource_id = os.environ.get('MARKET_RESOURCE_ID')
         url = f"https://api.data.gov.in/resource/{resource_id}?api-key={api_key}&format=json&limit=50"
-        
-        async with httpx.AsyncClient() as http_client:
+
+        async with httpx.AsyncClient(timeout=10) as http_client:
             response = await http_client.get(url)
+            response.raise_for_status()
             data = response.json()
-            
+
             if "records" in data:
-                return {"prices": data["records"]}
+                return {"prices": data["records"], "source": "live"}
+
     except Exception as e:
-        logging.error(f"Market API error: {str(e)}")
+        logging.error(f"Market API error: {e}")
     
     # Fallback dummy data
     return {
@@ -747,15 +762,9 @@ async def get_government_policies():
     }
 
 # Include the router in the main app
+
 app.include_router(api_router)
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 # Configure logging
 logging.basicConfig(
